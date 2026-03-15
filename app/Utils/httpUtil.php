@@ -24,6 +24,7 @@ final class FreshRSS_http_Util {
 	private static array $resolve_ok = [];
 
 	private static function getRetryAfterFile(string $url, string $proxy): string {
+		return '';
 		$domain = parse_url($url, PHP_URL_HOST);
 		if (!is_string($domain) || $domain === '') {
 			return '';
