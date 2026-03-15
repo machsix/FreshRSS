@@ -918,6 +918,29 @@ class FreshRSS_Entry extends Minz_Model {
 	}
 
 	/**
+	 * Replaces lazy-loaded image attributes with their real values.
+	 * Many sites defer image loading by storing the real URL in data-src / data-srcset
+	 * and leaving src blank or set to a placeholder.
+	 */
+	private function fixLazyLoadImages(DOMDocument $doc): void {
+		foreach ($doc->getElementsByTagName('img') as $img) {
+			if (!($img instanceof DOMElement)) {
+				continue;
+			}
+			$dataSrc = $img->getAttribute('data-src');
+			if ($dataSrc !== '') {
+				$img->setAttribute('src', $dataSrc);
+				$img->removeAttribute('data-src');
+			}
+			$dataSrcset = $img->getAttribute('data-srcset');
+			if ($dataSrcset !== '') {
+				$img->setAttribute('srcset', $dataSrcset);
+				$img->removeAttribute('data-srcset');
+			}
+		}
+	}
+
+	/**
 	 * @param string $url Overridden URL. Will default to the entry URL.
 	 * @throws Minz_Exception
 	 */
@@ -953,6 +976,7 @@ class FreshRSS_Entry extends Minz_Model {
 		if ($html !== '') {
 			$doc = new DOMDocument();
 			$doc->loadHTML($html, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING);
+			$this->fixLazyLoadImages($doc);
 			$xpath = new DOMXPath($doc);
 
 			// Account for HTTP redirections
